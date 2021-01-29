@@ -14,10 +14,11 @@ class SuperluDist(CMakePackage, CudaPackage, ROCmPackage):
     url      = "https://github.com/xiaoyeli/superlu_dist/archive/v6.0.0.tar.gz"
     git      = "https://github.com/xiaoyeli/superlu_dist.git"
 
-    maintainers = ['xiaoye', 'gchavez2', 'balay', 'pghysels']
+    maintainers = ['xiaoye', 'gchavez2', 'balay', 'pghysels', 'liuyangzhuan']
 
     version('develop', branch='master')
     version('xsdk-0.2.0', tag='xsdk-0.2.0')
+    version('6.4.0-amd', sha256='e5ffbdc4647473fc606d7c78e3207df40dce61cba1a2f8953ba3ffe88c9eacf4')
     version('6.4.0', sha256='cb9c0b2ba4c28e5ed5817718ba19ae1dd63ccd30bc44c8b8252b54f5f04a44cc')
     version('6.3.1', sha256='3787c2755acd6aadbb4d9029138c293a7570a2ed228806676edcc7e1d3f5a1d3')
     version('6.3.0', sha256='daf3264706caccae2b8fd5a572e40275f1e128fa235cb7c21ee2f8051c11af95')
