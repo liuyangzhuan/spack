@@ -1,4 +1,4 @@
-.. Copyright 2013-2021 Lawrence Livermore National Security, LLC and other
+.. Copyright 2013-2023 Lawrence Livermore National Security, LLC and other
    Spack Project Developers. See the top-level COPYRIGHT file for details.
 
    SPDX-License-Identifier: (Apache-2.0 OR MIT)
@@ -59,7 +59,8 @@ other techniques to minimize the size of the final image:
    &&   echo "  specs:" \
    &&   echo "  - gromacs+mpi" \
    &&   echo "  - mpich" \
-   &&   echo "  concretization: together" \
+   &&   echo "  concretizer:" \
+   &&   echo "    unify: true" \
    &&   echo "  config:" \
    &&   echo "    install_tree: /opt/software" \
    &&   echo "  view: /opt/view") > /opt/spack-environment/spack.yaml
@@ -108,9 +109,10 @@ Spack Images on Docker Hub
 --------------------------
 
 Docker images with Spack preinstalled and ready to be used are
-built on `Docker Hub <https://hub.docker.com/u/spack>`_
-at every push to ``develop`` or to a release branch. The OS that
-are currently supported are summarized in the table below:
+built when a release is tagged, or nightly on ``develop``. The images
+are then pushed both to `Docker Hub <https://hub.docker.com/u/spack>`_
+and to `GitHub Container Registry <https://github.com/orgs/spack/packages?repo_name=spack>`_.
+The OS that are currently supported are summarized in the table below:
 
 .. _containers-supported-os:
 
@@ -120,19 +122,51 @@ are currently supported are summarized in the table below:
    * - Operating System
      - Base Image
      - Spack Image
-   * - Ubuntu 16.04
-     - ``ubuntu:16.04``
-     - ``spack/ubuntu-xenial``
    * - Ubuntu 18.04
      - ``ubuntu:18.04``
      - ``spack/ubuntu-bionic``
+   * - Ubuntu 20.04
+     - ``ubuntu:20.04``
+     - ``spack/ubuntu-focal``
+   * - Ubuntu 22.04
+     - ``ubuntu:22.04``
+     - ``spack/ubuntu-jammy``
    * - CentOS 7
      - ``centos:7``
      - ``spack/centos7``
+   * - CentOS Stream
+     - ``quay.io/centos/centos:stream``
+     - ``spack/centos-stream``
+   * - openSUSE Leap
+     - ``opensuse/leap``
+     - ``spack/leap15``
+   * - Amazon Linux 2
+     - ``amazonlinux:2``
+     - ``spack/amazon-linux``
+   * - AlmaLinux 8
+     - ``almalinux:8``
+     - ``spack/almalinux8``
+   * - AlmaLinux 9
+     - ``almalinux:9``
+     - ``spack/almalinux9``
+   * - Rocky Linux 8
+     - ``rockylinux:8``
+     - ``spack/rockylinux8``
+   * - Rocky Linux 9
+     - ``rockylinux:9``
+     - ``spack/rockylinux9``
+   * - Fedora Linux 37
+     - ``fedora:37``
+     - ``spack/fedora37``
+   * - Fedora Linux 38
+     - ``fedora:38``
+     - ``spack/fedora38``
+
+
 
 All the images are tagged with the corresponding release of Spack:
 
-.. image:: dockerhub_spack.png
+.. image:: images/ghcr_spack.png
 
 with the exception of the ``latest`` tag that points to the HEAD
 of the ``develop`` branch. These images are available for anyone
@@ -197,7 +231,7 @@ Setting Base Images
 
 The ``images`` subsection is used to select both the image where
 Spack builds the software and the image where the built software
-is installed. This attribute can be set in two different ways and
+is installed. This attribute can be set in different ways and
 which one to use depends on the use case at hand.
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -242,7 +276,8 @@ software is respectively built and installed:
    &&   echo "  specs:" \
    &&   echo "  - gromacs+mpi" \
    &&   echo "  - mpich" \
-   &&   echo "  concretization: together" \
+   &&   echo "  concretizer:" \
+   &&   echo "    unify: true" \
    &&   echo "  config:" \
    &&   echo "    install_tree: /opt/software" \
    &&   echo "  view: /opt/view") > /opt/spack-environment/spack.yaml
@@ -257,10 +292,54 @@ software is respectively built and installed:
 
    ENTRYPOINT ["/bin/bash", "--rcfile", "/etc/profile", "-l"]
 
-This method of selecting base images is the simplest of the two, and we advise
+This is the simplest available method of selecting base images, and we advise
 to use it whenever possible. There are cases though where using Spack official
-images is not enough to fit production needs. In these situations users can manually
-select which base image to start from in the recipe, as we'll see next.
+images is not enough to fit production needs. In these situations users can
+extend the recipe to start with the bootstrapping of Spack at a certain pinned
+version or manually select which base image to start from in the recipe,
+as we'll see next.
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Use a Bootstrap Stage for Spack
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In some cases users may want to pin the commit sha that is used for Spack, to ensure later
+reproducibility, or start from a fork of the official Spack repository to try a bugfix or
+a feature in the early stage of development. This is possible by being just a little more
+verbose when specifying information about Spack in the ``spack.yaml`` file:
+
+.. code-block:: yaml
+
+   images:
+     os: amazonlinux:2
+     spack:
+       # URL of the Spack repository to be used in the container image
+       url: <to-use-a-fork>
+       # Either a commit sha, a branch name or a tag
+       ref: <sha/tag/branch>
+       # If true turn a branch name or a tag into the corresponding commit
+       # sha at the time of recipe generation
+       resolve_sha: <true/false>
+
+``url`` specifies the URL from which to clone Spack and defaults to https://github.com/spack/spack.
+The ``ref`` attribute can be either a commit sha, a branch name or a tag. The default value in
+this case is to use the ``develop`` branch, but it may change in the future to point to the latest stable
+release. Finally ``resolve_sha`` transform branch names or tags into the corresponding commit
+shas at the time of recipe generation, to allow for a greater reproducibility of the results
+at a later time.
+
+The list of operating systems that can be used to bootstrap Spack can be
+obtained with:
+
+.. command-output:: spack containerize --list-os
+
+.. note::
+
+   The ``resolve_sha`` option uses ``git rev-parse`` under the hood and thus it requires
+   to checkout the corresponding Spack repository in a temporary folder before generating
+   the recipe. Recipe generation may take longer when this option is set to true because
+   of this additional step.
+
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Use Custom Images Provided by Users
@@ -319,7 +398,8 @@ produces, for instance, the following ``Dockerfile``:
    &&   echo "      externals:" \
    &&   echo "      - spec: cuda%gcc" \
    &&   echo "        prefix: /usr/local/cuda" \
-   &&   echo "  concretization: together" \
+   &&   echo "  concretizer:" \
+   &&   echo "    unify: true" \
    &&   echo "  config:" \
    &&   echo "    install_tree: /opt/software" \
    &&   echo "  view: /opt/view") > /opt/spack-environment/spack.yaml
@@ -384,6 +464,120 @@ attribute:
 The minimum version of Singularity required to build a SIF (Singularity Image Format)
 image from the recipes generated by Spack is ``3.5.3``.
 
+------------------------------
+Extending the Jinja2 Templates
+------------------------------
+
+The Dockerfile and the Singularity definition file that Spack can generate are based on
+a few Jinja2 templates that are rendered according to the environment being containerized.
+Even though Spack allows a great deal of customization by just setting appropriate values for
+the configuration options, sometimes that is not enough.
+
+In those cases, a user can directly extend the template that Spack uses to render the image
+to e.g. set additional environment variables or perform specific operations either before or
+after a given stage of the build. Let's consider as an example the following structure:
+
+.. code-block:: console
+
+   $ tree /opt/environment
+   /opt/environment
+   ├── data
+   │     └── data.csv
+   ├── spack.yaml
+   ├── data
+   └── templates
+       └── container
+           └── CustomDockerfile
+
+containing both the custom template extension and the environment manifest file. To use a custom
+template, the environment must register the directory containing it, and declare its use under the
+``container`` configuration:
+
+.. code-block:: yaml
+   :emphasize-lines: 7-8,12
+
+   spack:
+     specs:
+     - hdf5~mpi
+     concretizer:
+       unify: true
+     config:
+       template_dirs:
+       - /opt/environment/templates
+     container:
+       format: docker
+       depfile: true
+       template: container/CustomDockerfile
+
+The template extension can override two blocks, named ``build_stage`` and ``final_stage``, similarly to
+the example below:
+
+.. code-block::
+   :emphasize-lines: 3,8
+
+   {% extends "container/Dockerfile" %}
+   {% block build_stage %}
+   RUN echo "Start building"
+   {{ super() }}
+   {% endblock %}
+   {% block final_stage %}
+   {{ super() }}
+   COPY data /share/myapp/data
+   {% endblock %}
+
+The recipe that gets generated contains the two extra instruction that we added in our template extension:
+
+.. code-block:: Dockerfile
+   :emphasize-lines: 4,43
+
+   # Build stage with Spack pre-installed and ready to be used
+   FROM spack/ubuntu-jammy:latest as builder
+
+   RUN echo "Start building"
+
+   # What we want to install and how we want to install it
+   # is specified in a manifest file (spack.yaml)
+   RUN mkdir /opt/spack-environment \
+   &&  (echo "spack:" \
+   &&   echo "  specs:" \
+   &&   echo "  - hdf5~mpi" \
+   &&   echo "  concretizer:" \
+   &&   echo "    unify: true" \
+   &&   echo "  config:" \
+   &&   echo "    template_dirs:" \
+   &&   echo "    - /tmp/environment/templates" \
+   &&   echo "    install_tree: /opt/software" \
+   &&   echo "  view: /opt/view") > /opt/spack-environment/spack.yaml
+
+   # Install the software, remove unnecessary deps
+   RUN cd /opt/spack-environment && spack env activate . && spack concretize && spack env depfile -o Makefile && make -j $(nproc) && spack gc -y
+
+   # Strip all the binaries
+   RUN find -L /opt/view/* -type f -exec readlink -f '{}' \; | \
+       xargs file -i | \
+       grep 'charset=binary' | \
+       grep 'x-executable\|x-archive\|x-sharedlib' | \
+       awk -F: '{print $1}' | xargs strip -s
+
+   # Modifications to the environment that are necessary to run
+   RUN cd /opt/spack-environment && \
+       spack env activate --sh -d . >> /etc/profile.d/z10_spack_environment.sh
+
+   # Bare OS image to run the installed executables
+   FROM ubuntu:22.04
+
+   COPY --from=builder /opt/spack-environment /opt/spack-environment
+   COPY --from=builder /opt/software /opt/software
+   COPY --from=builder /opt/._view /opt/._view
+   COPY --from=builder /opt/view /opt/view
+   COPY --from=builder /etc/profile.d/z10_spack_environment.sh /etc/profile.d/z10_spack_environment.sh
+
+   COPY data /share/myapp/data
+
+   ENTRYPOINT ["/bin/bash", "--rcfile", "/etc/profile", "-l", "-c", "$*", "--" ]
+   CMD [ "/bin/bash" ]
+
+
 .. _container_config_options:
 
 -----------------------
@@ -404,6 +598,10 @@ to customize the generation of container recipes:
      - The format of the recipe
      - ``docker`` or ``singularity``
      - Yes
+   * - ``depfile``
+     - Whether to use a depfile for installation, or not
+     - True or False (default)
+     - No
    * - ``images:os``
      - Operating system used as a base for the image
      - See :ref:`containers-supported-os`
@@ -412,6 +610,18 @@ to customize the generation of container recipes:
      - Version of Spack use in the ``build`` stage
      - Valid tags for ``base:image``
      - Yes, if using constrained selection of base images
+   * - ``images:spack:url``
+     - Repository from which Spack is cloned
+     - Any fork of Spack
+     - No
+   * - ``images:spack:ref``
+     - Reference for the checkout of Spack
+     - Either a commit sha, a branch name or a tag
+     - No
+   * - ``images:spack:resolve_sha``
+     - Resolve branches and tags in ``spack.yaml`` to commits in the generated recipe
+     - True or False (default: False)
+     - No
    * - ``images:build``
      - Image to be used in the ``build`` stage
      - Any valid container image
@@ -426,7 +636,7 @@ to customize the generation of container recipes:
      - No
    * - ``os_packages:command``
      - Tool used to manage system packages
-     - ``apt``, ``yum``
+     - ``apt``, ``yum``, ``dnf``, ``dnf_epel``, ``zypper``, ``apk``, ``yum_amazon``
      - Only with custom base images
    * - ``os_packages:update``
      - Whether or not to update the list of available packages
@@ -439,14 +649,6 @@ to customize the generation of container recipes:
    * - ``os_packages:final``
      - System packages needed at run-time
      - Valid packages for the current OS
-     - No
-   * - ``extra_instructions:build``
-     - Extra instructions (e.g. `RUN`, `COPY`, etc.) at the end of the ``build`` stage
-     - Anything understood by the current ``format``
-     - No
-   * - ``extra_instructions:final``
-     - Extra instructions (e.g. `RUN`, `COPY`, etc.) at the end of the ``final`` stage
-     - Anything understood by the current ``format``
      - No
    * - ``labels``
      - Labels to tag the image

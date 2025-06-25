@@ -1,4 +1,4 @@
-# Copyright 2013-2021 Lawrence Livermore National Security, LLC and other
+# Copyright 2013-2023 Lawrence Livermore National Security, LLC and other
 # Spack Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
@@ -16,11 +16,11 @@ level = "short"
 
 
 def setup_parser(subparser):
-    spack.cmd.common.arguments.add_common_arguments(subparser, ['yes_to_all'])
+    spack.cmd.common.arguments.add_common_arguments(subparser, ["yes_to_all"])
 
 
 def gc(parser, args):
-    specs = spack.store.db.unused_specs
+    specs = spack.store.STORE.db.unused_specs
 
     # Restrict garbage collection to the active environment
     # speculating over roots that are yet to be installed
@@ -31,8 +31,7 @@ def gc(parser, args):
         env.concretize()
         roots = [s for s in env.roots()]
         all_hashes = set([s.dag_hash() for r in roots for s in r.traverse()])
-        lr_hashes = set([s.dag_hash() for r in roots
-                         for s in r.traverse(deptype=('link', 'run'))])
+        lr_hashes = set([s.dag_hash() for r in roots for s in r.traverse(deptype=("link", "run"))])
         maybe_to_be_removed = all_hashes - lr_hashes
         specs = [s for s in specs if s.dag_hash() in maybe_to_be_removed]
 
@@ -44,4 +43,4 @@ def gc(parser, args):
     if not args.yes_to_all:
         spack.cmd.uninstall.confirm_removal(specs)
 
-    spack.cmd.uninstall.do_uninstall(None, specs, force=False)
+    spack.cmd.uninstall.do_uninstall(specs, force=False)

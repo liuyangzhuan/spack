@@ -1,19 +1,19 @@
-.. Copyright 2013-2021 Lawrence Livermore National Security, LLC and other
+.. Copyright 2013-2023 Lawrence Livermore National Security, LLC and other
    Spack Project Developers. See the top-level COPYRIGHT file for details.
 
    SPDX-License-Identifier: (Apache-2.0 OR MIT)
 
 .. _modules:
 
-=======
-Modules
-=======
+======================
+Modules (modules.yaml)
+======================
 
 The use of module systems to manage user environment in a controlled way
 is a common practice at HPC centers that is often embraced also by
 individual programmers on their development machines. To support this
 common practice Spack integrates with `Environment Modules
-<http://modules.sourceforge.net/>`_ and `LMod
+<http://modules.sourceforge.net/>`_ and `Lmod
 <http://lmod.readthedocs.io/en/latest/>`_ by providing post-install hooks
 that generate module files and commands to manipulate them.
 
@@ -26,8 +26,8 @@ Using module files via Spack
 ----------------------------
 
 If you have installed a supported module system you should be able to
-run either ``module avail`` or ``use -l spack`` to see what module
-files have been installed.  Here is sample output of those programs,
+run ``module avail`` to see what module
+files have been installed. Here is sample output of those programs,
 showing lots of installed packages:
 
 .. code-block:: console
@@ -35,32 +35,27 @@ showing lots of installed packages:
    $ module avail
 
    --------------------------------------------------------------- ~/spack/share/spack/modules/linux-ubuntu14-x86_64 ---------------------------------------------------------------
-   autoconf-2.69-gcc-4.8-qextxkq       hwloc-1.11.6-gcc-6.3.0-akcisez             m4-1.4.18-gcc-4.8-ev2znoc                   openblas-0.2.19-gcc-6.3.0-dhkmed6        py-setuptools-34.2.0-gcc-6.3.0-fadur4s
-   automake-1.15-gcc-4.8-maqvukj       isl-0.18-gcc-4.8-afi6taq                   m4-1.4.18-gcc-6.3.0-uppywnz                 openmpi-2.1.0-gcc-6.3.0-go2s4z5          py-six-1.10.0-gcc-6.3.0-p4dhkaw
-   binutils-2.28-gcc-4.8-5s7c6rs       libiconv-1.15-gcc-4.8-at46wg3              mawk-1.3.4-gcc-4.8-acjez57                  openssl-1.0.2k-gcc-4.8-dkls5tk           python-2.7.13-gcc-6.3.0-tyehea7
-   bison-3.0.4-gcc-4.8-ek4luo5         libpciaccess-0.13.4-gcc-6.3.0-gmufnvh      mawk-1.3.4-gcc-6.3.0-ostdoms                openssl-1.0.2k-gcc-6.3.0-gxgr5or         readline-7.0-gcc-4.8-xhufqhn
-   bzip2-1.0.6-gcc-4.8-iffrxzn         libsigsegv-2.11-gcc-4.8-pp2cvte            mpc-1.0.3-gcc-4.8-g5mztc5                   pcre-8.40-gcc-4.8-r5pbrxb                readline-7.0-gcc-6.3.0-zzcyicg
-   bzip2-1.0.6-gcc-6.3.0-bequudr       libsigsegv-2.11-gcc-6.3.0-7enifnh          mpfr-3.1.5-gcc-4.8-o7xm7az                  perl-5.24.1-gcc-4.8-dg5j65u              sqlite-3.8.5-gcc-6.3.0-6zoruzj
-   cmake-3.7.2-gcc-6.3.0-fowuuby       libtool-2.4.6-gcc-4.8-7a523za              mpich-3.2-gcc-6.3.0-dmvd3aw                 perl-5.24.1-gcc-6.3.0-6uzkpt6            tar-1.29-gcc-4.8-wse2ass
-   curl-7.53.1-gcc-4.8-3fz46n6         libtool-2.4.6-gcc-6.3.0-n7zmbzt            ncurses-6.0-gcc-4.8-dcpe7ia                 pkg-config-0.29.2-gcc-4.8-ib33t75        tcl-8.6.6-gcc-4.8-tfxzqbr
-   expat-2.2.0-gcc-4.8-mrv6bd4         libxml2-2.9.4-gcc-4.8-ryzxnsu              ncurses-6.0-gcc-6.3.0-ucbhcdy               pkg-config-0.29.2-gcc-6.3.0-jpgubk3      util-macros-1.19.1-gcc-6.3.0-xorz2x2
-   flex-2.6.3-gcc-4.8-yf345oo          libxml2-2.9.4-gcc-6.3.0-rltzsdh            netlib-lapack-3.6.1-gcc-6.3.0-js33dog       py-appdirs-1.4.0-gcc-6.3.0-jxawmw7       xz-5.2.3-gcc-4.8-mew4log
-   gcc-6.3.0-gcc-4.8-24puqve           lmod-7.4.1-gcc-4.8-je4srhr                 netlib-scalapack-2.0.2-gcc-6.3.0-5aidk4l    py-numpy-1.12.0-gcc-6.3.0-oemmoeu        xz-5.2.3-gcc-6.3.0-3vqeuvb
-   gettext-0.19.8.1-gcc-4.8-yymghlh    lua-5.3.4-gcc-4.8-im75yaz                  netlib-scalapack-2.0.2-gcc-6.3.0-hjsemcn    py-packaging-16.8-gcc-6.3.0-i2n3dtl      zip-3.0-gcc-4.8-rwar22d
-   gmp-6.1.2-gcc-4.8-5ub2wu5           lua-luafilesystem-1_6_3-gcc-4.8-wkey3nl    netlib-scalapack-2.0.2-gcc-6.3.0-jva724b    py-pyparsing-2.1.10-gcc-6.3.0-tbo6gmw    zlib-1.2.11-gcc-4.8-pgxsxv7
-   help2man-1.47.4-gcc-4.8-kcnqmau     lua-luaposix-33.4.0-gcc-4.8-mdod2ry        netlib-scalapack-2.0.2-gcc-6.3.0-rgqfr6d    py-scipy-0.19.0-gcc-6.3.0-kr7nat4        zlib-1.2.11-gcc-6.3.0-7cqp6cj
+   autoconf/2.69-gcc-4.8-qextxkq       hwloc/1.11.6-gcc-6.3.0-akcisez             m4/1.4.18-gcc-4.8-ev2znoc                   openblas/0.2.19-gcc-6.3.0-dhkmed6        py-setuptools/34.2.0-gcc-6.3.0-fadur4s
+   automake/1.15-gcc-4.8-maqvukj       isl/0.18-gcc-4.8-afi6taq                   m4/1.4.18-gcc-6.3.0-uppywnz                 openmpi/2.1.0-gcc-6.3.0-go2s4z5          py-six/1.10.0-gcc-6.3.0-p4dhkaw
+   binutils/2.28-gcc-4.8-5s7c6rs       libiconv/1.15-gcc-4.8-at46wg3              mawk/1.3.4-gcc-4.8-acjez57                  openssl/1.0.2k-gcc-4.8-dkls5tk           python/2.7.13-gcc-6.3.0-tyehea7
+   bison/3.0.4-gcc-4.8-ek4luo5         libpciaccess/0.13.4-gcc-6.3.0-gmufnvh      mawk/1.3.4-gcc-6.3.0-ostdoms                openssl/1.0.2k-gcc-6.3.0-gxgr5or         readline/7.0-gcc-4.8-xhufqhn
+   bzip2/1.0.6-gcc-4.8-iffrxzn         libsigsegv/2.11-gcc-4.8-pp2cvte            mpc/1.0.3-gcc-4.8-g5mztc5                   pcre/8.40-gcc-4.8-r5pbrxb                readline/7.0-gcc-6.3.0-zzcyicg
+   bzip2/1.0.6-gcc-6.3.0-bequudr       libsigsegv/2.11-gcc-6.3.0-7enifnh          mpfr/3.1.5-gcc-4.8-o7xm7az                  perl/5.24.1-gcc-4.8-dg5j65u              sqlite/3.8.5-gcc-6.3.0-6zoruzj
+   cmake/3.7.2-gcc-6.3.0-fowuuby       libtool/2.4.6-gcc-4.8-7a523za              mpich/3.2-gcc-6.3.0-dmvd3aw                 perl/5.24.1-gcc-6.3.0-6uzkpt6            tar/1.29-gcc-4.8-wse2ass
+   curl/7.53.1-gcc-4.8-3fz46n6         libtool/2.4.6-gcc-6.3.0-n7zmbzt            ncurses/6.0-gcc-4.8-dcpe7ia                 pkg-config/0.29.2-gcc-4.8-ib33t75        tcl/8.6.6-gcc-4.8-tfxzqbr
+   expat/2.2.0-gcc-4.8-mrv6bd4         libxml2/2.9.4-gcc-4.8-ryzxnsu              ncurses/6.0-gcc-6.3.0-ucbhcdy               pkg-config/0.29.2-gcc-6.3.0-jpgubk3      util-macros/1.19.1-gcc-6.3.0-xorz2x2
+   flex/2.6.3-gcc-4.8-yf345oo          libxml2/2.9.4-gcc-6.3.0-rltzsdh            netlib-lapack/3.6.1-gcc-6.3.0-js33dog       py-appdirs/1.4.0-gcc-6.3.0-jxawmw7       xz/5.2.3-gcc-4.8-mew4log
+   gcc/6.3.0-gcc-4.8-24puqve           lmod/7.4.1-gcc-4.8-je4srhr                 netlib-scalapack/2.0.2-gcc-6.3.0-5aidk4l    py-numpy/1.12.0-gcc-6.3.0-oemmoeu        xz/5.2.3-gcc-6.3.0-3vqeuvb
+   gettext/0.19.8.1-gcc-4.8-yymghlh    lua/5.3.4-gcc-4.8-im75yaz                  netlib-scalapack/2.0.2-gcc-6.3.0-hjsemcn    py-packaging/16.8-gcc-6.3.0-i2n3dtl      zip/3.0-gcc-4.8-rwar22d
+   gmp/6.1.2-gcc-4.8-5ub2wu5           lua-luafilesystem/1_6_3-gcc-4.8-wkey3nl    netlib-scalapack/2.0.2-gcc-6.3.0-jva724b    py-pyparsing/2.1.10-gcc-6.3.0-tbo6gmw    zlib/1.2.11-gcc-4.8-pgxsxv7
+   help2man/1.47.4-gcc-4.8-kcnqmau     lua-luaposix/33.4.0-gcc-4.8-mdod2ry        netlib-scalapack/2.0.2-gcc-6.3.0-rgqfr6d    py-scipy/0.19.0-gcc-6.3.0-kr7nat4        zlib/1.2.11-gcc-6.3.0-7cqp6cj
 
 The names should look familiar, as they resemble the output from ``spack find``.
-You *can* use the modules here directly.  For example, you could type either of these commands
-to load the ``cmake`` module:
+For example, you could type the following command to load the ``cmake`` module:
 
 .. code-block:: console
 
-   $ use cmake-3.7.2-gcc-6.3.0-fowuuby
-
-.. code-block:: console
-
-   $ module load cmake-3.7.2-gcc-6.3.0-fowuuby
+   $ module load cmake/3.7.2-gcc-6.3.0-fowuuby
 
 Neither of these is particularly pretty, easy to remember, or easy to
 type. Luckily, Spack offers many facilities for customizing the module
@@ -77,7 +72,7 @@ installation of a package.
 
    Spack only generates modulefiles when a package is installed. If
    you attempt to install a package and it is already installed, Spack
-   will not regenerate modulefiles for the package. This may to
+   will not regenerate modulefiles for the package. This may lead to
    inconsistent modulefiles if the Spack module configuration has
    changed since the package was installed, either by editing a file
    or changing scopes or environments.
@@ -93,9 +88,9 @@ the different file formats that can be generated by Spack:
   +-----------------------------+--------------------+-------------------------------+----------------------------------------------+----------------------+
   |                             | **Hook name**      |  **Default root directory**   | **Default template file**                    | **Compatible tools** |
   +=============================+====================+===============================+==============================================+======================+
-  |  **TCL - Non-Hierarchical** | ``tcl``            |  share/spack/modules          | share/spack/templates/modules/modulefile.tcl | Env. Modules/LMod    |
+  |  **Tcl - Non-Hierarchical** | ``tcl``            |  share/spack/modules          | share/spack/templates/modules/modulefile.tcl | Env. Modules/Lmod    |
   +-----------------------------+--------------------+-------------------------------+----------------------------------------------+----------------------+
-  |  **Lua - Hierarchical**     | ``lmod``           |  share/spack/lmod             | share/spack/templates/modules/modulefile.lua | LMod                 |
+  |  **Lua - Hierarchical**     | ``lmod``           |  share/spack/lmod             | share/spack/templates/modules/modulefile.lua | Lmod                 |
   +-----------------------------+--------------------+-------------------------------+----------------------------------------------+----------------------+
 
 
@@ -112,6 +107,8 @@ that are needed to use the installed software properly, e.g. injecting variables
 from language interpreters into their extensions. The latter two instead permit to
 fine tune the filesystem layout, content and creation of module files to meet
 site specific conventions.
+
+.. _overide-api-calls-in-package-py:
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Override API calls in ``package.py``
@@ -134,7 +131,7 @@ The second method:
        pass
 
 can instead inject run-time environment modifications in the module files of packages
-that depend on it. In both cases you need to fill ``run_env`` with the desired
+that depend on it. In both cases you need to fill ``env`` with the desired
 list of environment modifications.
 
 .. admonition:: The ``r`` package and callback APIs
@@ -181,10 +178,7 @@ to the environment variables listed below the folder name.
 Spack modules can be configured for multiple module sets. The default
 module set is named ``default``. All Spack commands which operate on
 modules default to apply the ``default`` module set, but can be
-applied to any module set in the configuration. Settings applied at
-the root of the configuration (e.g. ``modules:enable`` rather than
-``modules:default:enable``) are applied to the default module set for
-backwards compatibility.
+applied to any module set in the configuration.
 
 """""""""""""""""""""""""
 Changing the modules root
@@ -212,6 +206,18 @@ will install its ``tcl`` modules to ``/path/to/install/tcl/modules``
 location). The set ``my_custom_lmod_modules`` will install its lmod
 modules to ``/path/to/install/custom/lmod/modules`` (and still install
 its tcl modules, if any, to the default location).
+
+By default, an architecture-specific directory is added to the root
+directory. A module set may override that behavior by setting the
+``arch_folder`` config value to ``False``.
+
+.. code-block:: yaml
+
+   modules:
+     default:
+       roots:
+         tcl: /path/to/install/tcl/modules
+       arch_folder: false
 
 Obviously, having multiple module sets install modules to the default
 location could be confusing to users of your modules. In the next
@@ -261,32 +267,37 @@ of the installed software. For instance, in the snippet below:
 .. code-block:: yaml
 
    modules:
-     tcl:
-       # The keyword `all` selects every package
-       all:
-         environment:
-           set:
-             BAR: 'bar'
-       # This anonymous spec selects any package that
-       # depends on openmpi. The double colon at the
-       # end clears the set of rules that matched so far.
-       ^openmpi::
-         environment:
-           set:
-             BAR: 'baz'
-       # Selects any zlib package
-       zlib:
-         environment:
-           prepend_path:
-             LD_LIBRARY_PATH: 'foo'
-       # Selects zlib compiled with gcc@4.8
-       zlib%gcc@4.8:
-         environment:
-           unset:
-           - FOOBAR
+     default:
+       tcl:
+         # The keyword `all` selects every package
+         all:
+           environment:
+             set:
+               BAR: 'bar'
+         # This anonymous spec selects any package that
+         # depends on mpi. The double colon at the
+         # end clears the set of rules that matched so far.
+         ^mpi::
+           environment:
+             prepend_path:
+               PATH: '{^mpi.prefix}/bin'
+             set:
+               BAR: 'baz'
+         # Selects any zlib package
+         zlib:
+           environment:
+             prepend_path:
+               LD_LIBRARY_PATH: 'foo'
+         # Selects zlib compiled with gcc@4.8
+         zlib%gcc@4.8:
+           environment:
+             unset:
+             - FOOBAR
 
 you are instructing Spack to set the environment variable ``BAR=bar`` for every module,
-unless the associated spec satisfies ``^openmpi`` in which case ``BAR=baz``.
+unless the associated spec satisfies the abstract dependency ``^mpi`` in which case
+``BAR=baz``, and the directory containing the respective MPI executables is prepended
+to the ``PATH`` variable.
 In addition in any spec that satisfies ``zlib`` the value ``foo`` will be
 prepended to ``LD_LIBRARY_PATH`` and in any spec that satisfies ``zlib%gcc@4.8``
 the variable ``FOOBAR`` will be unset.
@@ -298,7 +309,7 @@ the variable ``FOOBAR`` will be unset.
      spec constraints are instead evaluated top to bottom.
 
 """"""""""""""""""""""""""""""""""""""""""""
-Blacklist or whitelist specific module files
+Exclude or include specific module files
 """"""""""""""""""""""""""""""""""""""""""""
 
 You can use anonymous specs also to prevent module files from being written or
@@ -310,9 +321,10 @@ your system. If you write a configuration file like:
 .. code-block:: yaml
 
    modules:
-     tcl:
-       whitelist: ['gcc', 'llvm']  # Whitelist will have precedence over blacklist
-       blacklist: ['%gcc@4.4.7']   # Assuming gcc@4.4.7 is the system compiler
+     default:
+       tcl:
+         include: ['gcc', 'llvm']  # include will have precedence over exclude
+         exclude: ['%gcc@4.4.7']   # Assuming gcc@4.4.7 is the system compiler
 
 you will prevent the generation of module files for any package that
 is compiled with ``gcc@4.4.7``, with the only exception of any ``gcc``
@@ -337,8 +349,9 @@ shows how to set hash length in the module file names:
 .. code-block:: yaml
 
    modules:
-     tcl:
-       hash_length: 7
+     default:
+       tcl:
+         hash_length: 7
 
 To help make module names more readable, and to help alleviate name conflicts
 with a short hash, one can use the ``suffixes`` option in the modules
@@ -348,11 +361,12 @@ For instance, the following config options,
 .. code-block:: yaml
 
    modules:
-     tcl:
-       all:
-         suffixes:
-           ^python@2.7.12: 'python-2.7.12'
-           ^openblas: 'openblas'
+     default:
+       tcl:
+         all:
+           suffixes:
+             ^python@2.7.12: 'python-2.7.12'
+             ^openblas: 'openblas'
 
 will add a ``python-2.7.12`` version string to any packages compiled with
 python matching the spec, ``python@2.7.12``. This is useful to know which
@@ -362,15 +376,16 @@ most likely via the ``+blas`` variant specification.
 
 The most heavyweight solution to module naming is to change the entire
 naming convention for module files. This uses the projections format
-covered in :ref:`adding_projections_to_views`.
+covered in :ref:`view_projections`.
 
 .. code-block:: yaml
 
   modules:
-    tcl:
-      projections:
-        all: '{name}/{version}-{compiler.name}-{compiler.version}-module'
-        ^mpi: '{name}/{version}-{^mpi.name}-{^mpi.version}-{compiler.name}-{compiler.version}-module'
+    default:
+      tcl:
+        projections:
+          all: '{name}/{version}-{compiler.name}-{compiler.version}-module'
+          ^mpi: '{name}/{version}-{^mpi.name}-{^mpi.version}-{compiler.name}-{compiler.version}-module'
 
 will create module files that are nested in directories by package
 name, contain the version and compiler name and version, and have the
@@ -380,17 +395,17 @@ name and version for all packages that depend on mpi.
 
 When specifying module names by projection for Lmod modules, we
 recommend NOT including names of dependencies (e.g., MPI, compilers)
-that are already in the LMod hierarchy.
+that are already in the Lmod hierarchy.
 
 
 
 .. note::
-   TCL modules
-     TCL modules also allow for explicit conflicts between modulefiles.
+   Tcl and Lua modules also allow for explicit conflicts between modulefiles.
 
-     .. code-block:: yaml
+   .. code-block:: yaml
 
-        modules:
+      modules:
+        default:
           enable:
             - tcl
           tcl:
@@ -401,17 +416,20 @@ that are already in the LMod hierarchy.
                 - '{name}'
                 - 'intel/14.0.1'
 
-     will create module files that will conflict with ``intel/14.0.1`` and with the
-     base directory of the same module, effectively preventing the possibility to
-     load two or more versions of the same software at the same time. The tokens
-     that are available for use in this directive are the same understood by
-     the :meth:`~spack.spec.Spec.format` method.
+   will create module files that will conflict with ``intel/14.0.1`` and with the
+   base directory of the same module, effectively preventing the possibility to
+   load two or more versions of the same software at the same time. The tokens
+   that are available for use in this directive are the same understood by the
+   :meth:`~spack.spec.Spec.format` method.
+
+   For Lmod and Environment Modules versions prior 4.2, it is important to
+   express the conflict on both modulefiles conflicting with each other.
 
 
 .. note::
-   LMod hierarchical module files
+   Lmod hierarchical module files
      When ``lmod`` is activated Spack will generate a set of hierarchical lua module
-     files that are understood by LMod. The hierarchy will always contain the
+     files that are understood by Lmod. The hierarchy will always contain the
      two layers ``Core`` / ``Compiler`` but can be further extended to
      any of the virtual dependencies present in Spack. A case that could be useful in
      practice is for instance:
@@ -419,20 +437,21 @@ that are already in the LMod hierarchy.
      .. code-block:: yaml
 
        modules:
-         enable:
-           - lmod
-         lmod:
-           core_compilers:
-             - 'gcc@4.8'
-           core_specs:
-             - 'python'
-           hierarchy:
-             - 'mpi'
-             - 'lapack'
+         default:
+           enable:
+             - lmod
+           lmod:
+             core_compilers:
+               - 'gcc@4.8'
+             core_specs:
+               - 'python'
+             hierarchy:
+               - 'mpi'
+               - 'lapack'
 
      that will generate a hierarchy in which the ``lapack`` and ``mpi`` layer can be switched
      independently. This allows a site to build the same libraries or applications against different
-     implementations of ``mpi`` and ``lapack``, and let LMod switch safely from one to the
+     implementations of ``mpi`` and ``lapack``, and let Lmod switch safely from one to the
      other.
 
      All packages built with a compiler in ``core_compilers`` and all
@@ -442,12 +461,42 @@ that are already in the LMod hierarchy.
 .. warning::
   Consistency of Core packages
    The user is responsible for maintining consistency among core packages, as ``core_specs``
-   bypasses the hierarchy that allows LMod to safely switch between coherent software stacks.
+   bypasses the hierarchy that allows Lmod to safely switch between coherent software stacks.
 
 .. warning::
   Deep hierarchies and ``lmod spider``
    For hierarchies that are deeper than three layers ``lmod spider`` may have some issues.
-   See `this discussion on the LMod project <https://github.com/TACC/Lmod/issues/114>`_.
+   See `this discussion on the Lmod project <https://github.com/TACC/Lmod/issues/114>`_.
+
+""""""""""""""""""""""
+Select default modules
+""""""""""""""""""""""
+
+By default, when multiple modules of the same name share a directory,
+the highest version number will be the default module. This behavior
+of the ``module`` command can be overridden with a symlink named
+``default`` to the desired default module. If you wish to configure
+default modules with Spack, add a ``defaults`` key to your modules
+configuration:
+
+.. code-block:: yaml
+
+  modules:
+    my-module-set:
+      tcl:
+        defaults:
+        - gcc@10.2.1
+        - hdf5@1.2.10+mpi+hl%gcc
+
+These defaults may be arbitrarily specific. For any package that
+satisfies a default, Spack will generate the module file in the
+appropriate path, and will generate a default symlink to the module
+file as well.
+
+.. warning::
+  If Spack is configured to generate multiple default packages in the
+  same directory, the last modulefile to be generated will be the
+  default module.
 
 .. _customize-env-modifications:
 
@@ -472,18 +521,33 @@ inspections and customize them per-module-set.
     prefix_inspections:
       bin:
         - PATH
-      lib:
-        - LIBRARY_PATH
+      man:
+        - MANPATH
       '':
         - CMAKE_PREFIX_PATH
 
 Prefix inspections are only applied if the relative path inside the
 installation prefix exists. In this case, for a Spack package ``foo``
 installed to ``/spack/prefix/foo``, if ``foo`` installs executables to
-``bin`` but no libraries in ``lib``, the generated module file for
+``bin`` but no manpages in ``man``, the generated module file for
 ``foo`` would update ``PATH`` to contain ``/spack/prefix/foo/bin`` and
 ``CMAKE_PREFIX_PATH`` to contain ``/spack/prefix/foo``, but would not
-update ``LIBRARY_PATH``.
+update ``MANPATH``.
+
+The default list of environment variables in this config section
+includes ``PATH``, ``MANPATH``, ``ACLOCAL_PATH``, ``PKG_CONFIG_PATH``
+and ``CMAKE_PREFIX_PATH``, as well as ``DYLD_FALLBACK_LIBRARY_PATH``
+on macOS. On Linux however, the corresponding ``LD_LIBRARY_PATH``
+variable is *not* set, because it affects the behavior of
+system executables too.
+
+.. note::
+
+   In general, the ``LD_LIBRARY_PATH`` variable is not required
+   when using packages built with Spack, thanks to the use of RPATH.
+   Some packages may still need the variable, which is best handled
+   on a per-package basis instead of globally, as explained in
+   :ref:`overide-api-calls-in-package-py`.
 
 There is a special case for prefix inspections relative to environment
 views. If all of the following conditions hold for a module set
@@ -491,8 +555,7 @@ configuration:
 
 #. The configuration is for an :ref:`environment <environments>` and
    will never be applied outside the environment,
-#. The environment in question is configured to use a :ref:`view
-   <filesystem-views>`,
+#. The environment in question is configured to use a view,
 #. The :ref:`environment view is configured
    <configuring_environment_views>` with a projection that ensures
    every package is linked to a unique directory,
@@ -544,16 +607,17 @@ Filter out environment modifications
 Modifications to certain environment variables in module files are there by
 default, for instance because they are generated by prefix inspections.
 If you want to prevent modifications to some environment variables, you can
-do so by using the environment blacklist:
+do so by using the ``exclude_env_vars``:
 
 .. code-block:: yaml
 
    modules:
-     tcl:
-       all:
-         filter:
-           # Exclude changes to any of these variables
-           environment_blacklist: ['CPATH', 'LIBRARY_PATH']
+     default:
+       tcl:
+         all:
+           filter:
+             # Exclude changes to any of these variables
+             exclude_env_vars: ['CPATH', 'LIBRARY_PATH']
 
 The configuration above will generate module files that will not contain
 modifications to either ``CPATH`` or ``LIBRARY_PATH``.
@@ -565,42 +629,42 @@ modifications to either ``CPATH`` or ``LIBRARY_PATH``.
 Autoload dependencies
 """""""""""""""""""""
 
-In some cases it can be useful to have module files that automatically load
-their dependencies.  This may be the case for Python extensions, if not
-activated using ``spack activate``:
+Often it is required for a module to have its (transient) dependencies loaded as well.
+One example where this is useful is when one package needs to use executables provided
+by its dependency; when the dependency is autoloaded, the executable will be in the
+PATH. Similarly for scripting languages such as Python, packages and their dependencies
+have to be loaded together.
+
+Autoloading is enabled by default for Lmod and Environment Modules. The former
+has builtin support for through the ``depends_on`` function. The latter uses
+``module load`` statement to load and track dependencies.
+
+Autoloading can also be enabled conditionally:
 
 .. code-block:: yaml
 
-   modules:
-     tcl:
-       ^python:
-         autoload: 'direct'
+    modules:
+      default:
+        tcl:
+          all:
+            autoload: none
+          ^python:
+            autoload: direct
 
 The configuration file above will produce module files that will
 load their direct dependencies if the package installed depends on ``python``.
 The allowed values for the ``autoload`` statement are either ``none``,
-``direct`` or ``all``.  The default is ``none``.
-
-.. tip::
-  Building external software
-     Setting ``autoload`` to ``direct`` for all packages can be useful
-     when building software outside of a Spack installation that depends on
-     artifacts in that installation.  E.g. (adjust ``lmod`` vs ``tcl``
-     as appropriate):
-
-  .. code-block:: yaml
-
-     modules:
-       lmod:
-         all:
-           autoload: 'direct'
+``direct`` or ``all``.
 
 .. note::
-  TCL prerequisites
+  Tcl prerequisites
      In the ``tcl`` section of the configuration file it is possible to use
      the ``prerequisites`` directive that accepts the same values as
      ``autoload``. It will produce module files that have a ``prereq``
-     statement instead of automatically loading other modules.
+     statement, which autoloads dependencies on Environment Modules when its
+     ``auto_handling`` configuration option is enabled. If Environment Modules
+     is installed with Spack, ``auto_handling`` is enabled by default starting
+     version 4.2. Otherwise it is enabled by default since version 5.0.
 
 ------------------------
 Maintaining Module Files
@@ -721,35 +785,35 @@ cut-and-pasted into a shell script.  For example:
 
     $ spack module tcl loads --dependencies py-numpy git
     # bzip2@1.0.6%gcc@4.9.3=linux-x86_64
-    module load bzip2-1.0.6-gcc-4.9.3-ktnrhkrmbbtlvnagfatrarzjojmkvzsx
+    module load bzip2/1.0.6-gcc-4.9.3-ktnrhkrmbbtlvnagfatrarzjojmkvzsx
     # ncurses@6.0%gcc@4.9.3=linux-x86_64
-    module load ncurses-6.0-gcc-4.9.3-kaazyneh3bjkfnalunchyqtygoe2mncv
+    module load ncurses/6.0-gcc-4.9.3-kaazyneh3bjkfnalunchyqtygoe2mncv
     # zlib@1.2.8%gcc@4.9.3=linux-x86_64
-    module load zlib-1.2.8-gcc-4.9.3-v3ufwaahjnviyvgjcelo36nywx2ufj7z
+    module load zlib/1.2.8-gcc-4.9.3-v3ufwaahjnviyvgjcelo36nywx2ufj7z
     # sqlite@3.8.5%gcc@4.9.3=linux-x86_64
-    module load sqlite-3.8.5-gcc-4.9.3-a3eediswgd5f3rmto7g3szoew5nhehbr
+    module load sqlite/3.8.5-gcc-4.9.3-a3eediswgd5f3rmto7g3szoew5nhehbr
     # readline@6.3%gcc@4.9.3=linux-x86_64
-    module load readline-6.3-gcc-4.9.3-se6r3lsycrwxyhreg4lqirp6xixxejh3
+    module load readline/6.3-gcc-4.9.3-se6r3lsycrwxyhreg4lqirp6xixxejh3
     # python@3.5.1%gcc@4.9.3=linux-x86_64
-    module load python-3.5.1-gcc-4.9.3-5q5rsrtjld4u6jiicuvtnx52m7tfhegi
+    module load python/3.5.1-gcc-4.9.3-5q5rsrtjld4u6jiicuvtnx52m7tfhegi
     # py-setuptools@20.5%gcc@4.9.3=linux-x86_64
-    module load py-setuptools-20.5-gcc-4.9.3-4qr2suj6p6glepnedmwhl4f62x64wxw2
+    module load py-setuptools/20.5-gcc-4.9.3-4qr2suj6p6glepnedmwhl4f62x64wxw2
     # py-nose@1.3.7%gcc@4.9.3=linux-x86_64
-    module load py-nose-1.3.7-gcc-4.9.3-pwhtjw2dvdvfzjwuuztkzr7b4l6zepli
+    module load py-nose/1.3.7-gcc-4.9.3-pwhtjw2dvdvfzjwuuztkzr7b4l6zepli
     # openblas@0.2.17%gcc@4.9.3+shared=linux-x86_64
-    module load openblas-0.2.17-gcc-4.9.3-pw6rmlom7apfsnjtzfttyayzc7nx5e7y
+    module load openblas/0.2.17-gcc-4.9.3-pw6rmlom7apfsnjtzfttyayzc7nx5e7y
     # py-numpy@1.11.0%gcc@4.9.3+blas+lapack=linux-x86_64
-    module load py-numpy-1.11.0-gcc-4.9.3-mulodttw5pcyjufva4htsktwty4qd52r
+    module load py-numpy/1.11.0-gcc-4.9.3-mulodttw5pcyjufva4htsktwty4qd52r
     # curl@7.47.1%gcc@4.9.3=linux-x86_64
-    module load curl-7.47.1-gcc-4.9.3-ohz3fwsepm3b462p5lnaquv7op7naqbi
+    module load curl/7.47.1-gcc-4.9.3-ohz3fwsepm3b462p5lnaquv7op7naqbi
     # autoconf@2.69%gcc@4.9.3=linux-x86_64
-    module load autoconf-2.69-gcc-4.9.3-bkibjqhgqm5e3o423ogfv2y3o6h2uoq4
+    module load autoconf/2.69-gcc-4.9.3-bkibjqhgqm5e3o423ogfv2y3o6h2uoq4
     # cmake@3.5.0%gcc@4.9.3~doc+ncurses+openssl~qt=linux-x86_64
-    module load cmake-3.5.0-gcc-4.9.3-x7xnsklmgwla3ubfgzppamtbqk5rwn7t
+    module load cmake/3.5.0-gcc-4.9.3-x7xnsklmgwla3ubfgzppamtbqk5rwn7t
     # expat@2.1.0%gcc@4.9.3=linux-x86_64
-    module load expat-2.1.0-gcc-4.9.3-6pkz2ucnk2e62imwakejjvbv6egncppd
+    module load expat/2.1.0-gcc-4.9.3-6pkz2ucnk2e62imwakejjvbv6egncppd
     # git@2.8.0-rc2%gcc@4.9.3+curl+expat=linux-x86_64
-    module load git-2.8.0-rc2-gcc-4.9.3-3bib4hqtnv5xjjoq5ugt3inblt4xrgkd
+    module load git/2.8.0-rc2-gcc-4.9.3-3bib4hqtnv5xjjoq5ugt3inblt4xrgkd
 
 The script may be further edited by removing unnecessary modules.
 
@@ -768,12 +832,12 @@ For example, consider the following on one system:
 .. code-block:: console
 
     $ module avail
-    linux-SuSE11-x86_64/antlr-2.7.7-gcc-5.3.0-bdpl46y
+    linux-SuSE11-x86_64/antlr/2.7.7-gcc-5.3.0-bdpl46y
 
     $ spack module tcl loads antlr    # WRONG!
     # antlr@2.7.7%gcc@5.3.0~csharp+cxx~java~python arch=linux-SuSE11-x86_64
-    module load antlr-2.7.7-gcc-5.3.0-bdpl46y
+    module load antlr/2.7.7-gcc-5.3.0-bdpl46y
 
     $ spack module tcl loads --prefix linux-SuSE11-x86_64/ antlr
     # antlr@2.7.7%gcc@5.3.0~csharp+cxx~java~python arch=linux-SuSE11-x86_64
-    module load linux-SuSE11-x86_64/antlr-2.7.7-gcc-5.3.0-bdpl46y
+    module load linux-SuSE11-x86_64/antlr/2.7.7-gcc-5.3.0-bdpl46y
